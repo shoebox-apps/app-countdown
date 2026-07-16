@@ -1,0 +1,7 @@
+{
+  "name": "Countdown",
+  "version": "1.1.0",
+  "entry": "index.html",
+  "icon": "icon.png",
+  "repo": "https://github.com/shoebox-apps/app-countdown"
+}

@@ -1,0 +1,295 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Countdown</title>
+<style>
+  :root {
+    --bg: #0b0d12;
+    --bg-glow: #141927;
+    --ink: #f2f4f8;
+    --dim: #8b93a7;
+    --accent: #ff5c39;
+    --accent-soft: rgba(255, 92, 57, 0.14);
+    --line: rgba(255, 255, 255, 0.08);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; }
+  body {
+    background: radial-gradient(120% 90% at 50% 0%, var(--bg-glow) 0%, var(--bg) 60%);
+    color: var(--ink);
+    font-family: -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    min-height: 100dvh;
+    padding: max(20px, env(safe-area-inset-top)) 20px max(20px, env(safe-area-inset-bottom));
+    text-align: center;
+    overflow-x: hidden;
+  }
+  .kicker {
+    font-size: 12px;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-weight: 700;
+    margin-bottom: 14px;
+    animation: fadeDown 0.8s ease both;
+  }
+  h1 {
+    font-size: clamp(26px, 7.5vw, 44px);
+    font-weight: 800;
+    line-height: 1.12;
+    letter-spacing: -0.02em;
+    max-width: 22ch;
+    margin-bottom: 6px;
+    animation: fadeDown 0.8s 0.1s ease both;
+  }
+  .subhead {
+    color: var(--dim);
+    font-size: clamp(13px, 3.6vw, 16px);
+    margin-bottom: 40px;
+    animation: fadeDown 0.8s 0.2s ease both;
+  }
+  .days-hero {
+    animation: fadeUp 0.9s 0.3s ease both;
+    margin-bottom: 34px;
+  }
+  .days-num {
+    font-variant-numeric: tabular-nums;
+    font-size: clamp(88px, 30vw, 190px);
+    font-weight: 900;
+    line-height: 0.95;
+    letter-spacing: -0.04em;
+    background: linear-gradient(180deg, var(--ink) 30%, #b8c0d4 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 0 0 60px rgba(255, 92, 57, 0.12);
+  }
+  .days-label {
+    font-size: 13px;
+    letter-spacing: 0.32em;
+    text-transform: uppercase;
+    color: var(--dim);
+    margin-top: 6px;
+  }
+  .units {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    width: 100%;
+    max-width: 420px;
+    animation: fadeUp 0.9s 0.45s ease both;
+    margin-bottom: 44px;
+  }
+  .unit {
+    flex: 1;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 16px 6px 13px;
+    backdrop-filter: blur(6px);
+  }
+  .unit b {
+    display: block;
+    font-variant-numeric: tabular-nums;
+    font-size: clamp(26px, 8.5vw, 40px);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+  }
+  .unit span {
+    display: block;
+    font-size: 10px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--dim);
+    margin-top: 5px;
+  }
+  .unit.seconds b { color: var(--accent); }
+  .pulse-dot {
+    display: inline-block;
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--accent);
+    margin-right: 8px;
+    vertical-align: 1px;
+    animation: pulse 1s infinite;
+  }
+  .live-line {
+    font-size: 12px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--dim);
+    margin-bottom: 30px;
+    animation: fadeUp 0.9s 0.55s ease both;
+  }
+  a.cta {
+    display: inline-block;
+    color: var(--ink);
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 15px;
+    padding: 14px 26px;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 92, 57, 0.5);
+    background: var(--accent-soft);
+    transition: transform 0.15s ease, background 0.15s ease;
+    animation: fadeUp 0.9s 0.65s ease both;
+    touch-action: manipulation;
+  }
+  a.cta:active { transform: scale(0.96); background: rgba(255, 92, 57, 0.28); }
+  .target-note {
+    margin-top: 22px;
+    color: var(--dim);
+    font-size: 12px;
+    animation: fadeUp 0.9s 0.75s ease both;
+  }
+  .closed h1 { color: var(--accent); }
+  .stages {
+    list-style: none;
+    max-width: 460px;
+    width: 100%;
+    margin: 28px auto 0;
+    text-align: left;
+    display: grid;
+    gap: 11px;
+    animation: fadeUp 0.9s 0.8s ease both;
+  }
+  .stages li {
+    position: relative;
+    padding-left: 22px;
+    font-size: 12.5px;
+    line-height: 1.4;
+    color: var(--dim);
+  }
+  .stages li::before {
+    content: "";
+    position: absolute;
+    left: 4px; top: 5px;
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.14);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+  }
+  .stages li b {
+    color: var(--ink);
+    font-weight: 700;
+    margin-right: 7px;
+    font-variant-numeric: tabular-nums;
+  }
+  .stages li.now { color: var(--ink); }
+  .stages li.now::before {
+    background: var(--accent);
+    border-color: var(--accent);
+    box-shadow: 0 0 10px rgba(255, 92, 57, 0.8);
+  }
+  .stages li.now b { color: var(--accent); }
+  .honest {
+    max-width: 460px;
+    margin: 22px auto 0;
+    color: var(--dim);
+    font-size: 12.5px;
+    line-height: 1.5;
+    animation: fadeUp 0.9s 0.85s ease both;
+  }
+  .honest b { color: var(--ink); font-weight: 700; }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.35; transform: scale(0.8); }
+  }
+  @keyframes fadeDown {
+    from { opacity: 0; transform: translateY(-14px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(14px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+</style>
+</head>
+<body>
+
+<div class="kicker">Sideloading lockdown</div>
+<h1 id="headline">Days until the first door closes.</h1>
+<p class="subhead">Google’s developer-verification lockdown arrives in stages. First hard enforcement lands <b>Sept&nbsp;30,&nbsp;2026</b> — Brazil, Indonesia, Singapore, Thailand. Global follows through 2027.</p>
+
+<div class="days-hero">
+  <div class="days-num" id="days">—</div>
+  <div class="days-label">Days</div>
+</div>
+
+<div class="units">
+  <div class="unit"><b id="hours">—</b><span>Hours</span></div>
+  <div class="unit"><b id="minutes">—</b><span>Min</span></div>
+  <div class="unit seconds"><b id="seconds">—</b><span>Sec</span></div>
+</div>
+
+<div class="live-line"><span class="pulse-dot"></span>Live · ticking every second</div>
+
+<a class="cta" href="https://keepandroidopen.org" target="_blank" rel="noopener">Keep Android Open →</a>
+<div class="target-note">Counting to first-market enforcement · September 30, 2026 · 00:00 ET</div>
+
+<ol class="stages">
+  <li><b>June 2026</b> Android Developer Verifier reaches Android&nbsp;8+ phones (already underway)</li>
+  <li><b>Aug 2026</b> High-friction “advanced flow” for installing unverified apps goes global (developer mode, restart, 24-hour wait)</li>
+  <li class="now"><b>Sep 30, 2026</b> Enforcement begins — Brazil, Indonesia, Singapore, Thailand</li>
+  <li><b>2027</b> Enforcement expands globally</li>
+</ol>
+
+<p class="honest">The door never fully shuts: apps still install over ADB. That’s the whole idea — <b>one install through the door that stays open, and everything after that is just a link.</b></p>
+
+<script>
+  // ===================== TARGET DATE (edit me) =====================
+  // First enforcement: September 30, 2026 at 00:00 Eastern Time — the day
+  // Google's developer-verification requirement starts being enforced in
+  // the first markets (Brazil, Indonesia, Singapore, Thailand). This is
+  // stage 3 of a staged rollout (see the timeline in the page body); global
+  // enforcement follows in 2027+. We count to the first hard date because
+  // it's the first one that actually blocks installs.
+  // On that date the US Eastern zone is on daylight saving time (EDT,
+  // UTC-4) — DST doesn't end until Nov 1, 2026 — so we encode the
+  // offset explicitly as -04:00. This pins an exact instant in UTC,
+  // so the countdown is correct in every viewer's local timezone.
+  const TARGET_DATE_ISO = "2026-09-30T00:00:00-04:00";
+  // =================================================================
+
+  const TARGET_MS = new Date(TARGET_DATE_ISO).getTime();
+
+  const $days = document.getElementById("days");
+  const $hours = document.getElementById("hours");
+  const $minutes = document.getElementById("minutes");
+  const $seconds = document.getElementById("seconds");
+  const pad = (n) => String(n).padStart(2, "0");
+
+  function tick() {
+    const diff = TARGET_MS - Date.now();
+
+    if (diff <= 0) {
+      document.body.classList.add("closed");
+      document.getElementById("headline").textContent = "The first door has closed.";
+      $days.textContent = "0";
+      $hours.textContent = $minutes.textContent = $seconds.textContent = "00";
+      return;
+    }
+
+    const totalSeconds = Math.floor(diff / 1000);
+    const days = Math.floor(totalSeconds / 86400);
+    const hours = Math.floor((totalSeconds % 86400) / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+
+    $days.textContent = String(days);
+    $hours.textContent = pad(hours);
+    $minutes.textContent = pad(minutes);
+    $seconds.textContent = pad(seconds);
+  }
+
+  tick();
+  setInterval(tick, 1000);
+</script>
+</body>
+</html>
